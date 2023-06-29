@@ -6,7 +6,7 @@ Help()
 {  
    #show help
    echo
-   echo "Syntax: align.sh [-h] [-i SRA_ID] [-n SAMPLE_NAME] [-o OUTPUT_DIRECTORY] [-t TEMP_DIRECTORY]"
+   echo "Syntax: align.sh [-h] [-b BOWTIE_INDEX] [-i SRA_ID] [-n SAMPLE_NAME] [-o OUTPUT_DIRECTORY] [-p THREADS] [-t TEMP_DIRECTORY]"
    echo "options:"   
    echo "b     Path for bowtie reference index files. Should include filepath and prefix for all files."
    echo "h     Print this Help."
