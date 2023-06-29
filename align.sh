@@ -8,12 +8,13 @@ Help()
    echo
    echo "Syntax: align.sh [-h] [-i SRA_ID] [-n SAMPLE_NAME] [-o OUTPUT_DIRECTORY] [-t TEMP_DIRECTORY]"
    echo "options:"   
+   echo "b     Path for bowtie reference index files. Should include filepath and prefix for all files."
    echo "h     Print this Help."
    echo "i     The SRA ID of your sample. This should be something like SRRXXXXXXX."
    echo "n     The name of your sample."
    echo "o     Choose a directory for output files created by this pipeline."
+   echo "p     [Optional] If you want to multithread, choose number of threads here. Recommended if possible."
    echo "t     Choose a directory for temporary files to be downloaded to."
-   echo
 }
 
 bt=''
