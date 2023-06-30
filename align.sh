@@ -51,13 +51,12 @@ cd $tempdir
 
 echo "Downloading and quality checking fastqs..."
 if [ -f ${id}_1.fastq.gz -a -f ${id}_2.fastq.gz ]; then
-	echo "Fastqs already exist"
+  echo "Fastqs already exist"
 else
   prefetch --max-size 100G $id
   fastq-dump --outdir $tempdir --gzip --skip-technical  -F  --split-files --clip ./$id
   rm -rf $id
-  
-	fastp -z 1 -i ${id}_1.fastq.gz -I ${id}_2.fastq.gz -o ${id}_1.fastp.gz -O ${id}_2.fastp.gz
+  fastp -z 1 -i ${id}_1.fastq.gz -I ${id}_2.fastq.gz -o ${id}_1.fastp.gz -O ${id}_2.fastp.gz
 fi
 #delete unnecessary files
 if [ -f $id_1.fastp.gz -a -f ${id}_2.fastp.gz ]; then
@@ -73,13 +72,13 @@ if [ -f $name.sorted ]; then
 	echo "Sorted BAM already exists"
 else
   bowtie2  -p $threads -x /home/lm2ku/AA_data_repo/hg19/hg19full -1 /scratch/lm2ku/fastp/${id}_1.fastq.gz -2 /scratch/lm2ku/fastp/${id}_2.fastq.gz > ${name}.sam
-	samtools fixmate -O bam $name.sam $name.fixmate	
-	samtools sort $name.fixmate -m 20G -o $outdir/$name.sorted
+  samtools fixmate -O bam $name.sam $name.fixmate	
+  samtools sort $name.fixmate -m 20G -o $outdir/$name.sorted
 fi
 
 cd $outdir
 if [ -f $name.sorted.bai ]; then
-	echo "BAM index already exists"
+  echo "BAM index already exists"
 else
   samtools index $name.sorted
 fi
