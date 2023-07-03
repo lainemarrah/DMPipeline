@@ -5,10 +5,9 @@ tempdir = x
 bowtieidx = x
 cnvkitref = x
 
-#double check assignments and variable use
-# make sure directories are good throughout
+#todo: assign variables by parsing from command line
 
-#just output so it knows how to backtrack
+#output so it knows how to backtrack
 rule all:
     input:
         "{sample}.dmrpt"
@@ -21,13 +20,11 @@ rule fastp:
     output:
         o1="{tempdir}/{id}_1.fastp.gz"
         o2="{tempdir}/{id}_2.fastp.gz"
+    params:
+        tempdir=tempdir
+        id=id
     run:
-        shell("prefetch --max-size 100G {id}")
-        shell("fastq-dump --outdir {tempdir} --gzip --skip-technical  -F  --split-files --clip ./{id}")
-        shell("rm -rf {id}")
         shell("fastp -z 1 -i {input.i1} -I {input.i2} -o {output.o1} -O {output.o2}")
-
-# figure out how to delete fastq if successful
 
 rule bowtie_align:
     input:
@@ -35,6 +32,11 @@ rule bowtie_align:
         i2="{tempdir}/{id}_2.fastp.gz"
     output:
         "{tempdir}/{name}.bam"
+    params:
+        tempdir=tempdir
+        id=id
+        name=name
+        bowtieidx=bowtieidx
     shell:
         "bowtie2 -x {bowtieidx} -1 {input.i1} -2 {input.i2} | samtools view -bS - > {output}"
 
@@ -43,6 +45,9 @@ rule fixmate:
         "{tempdir}/{name}.bam"
     output:
         "{tempdir}/{name}.fixmate"
+    params:
+        tempdir=tempdir
+        name=name
     shell:
         "samtools fixmate -O bam {input} {output}"
 
@@ -53,6 +58,10 @@ rule sort_and_index:
     output:
         bam="{outdir}/{name}.sorted"
         bai="{outdir}/{name}.sorted.bai"
+    params:
+        tempdir=tempdir
+        outdir=outdir
+        name=name
     run:
         shell("samtools sort {input} -m 20G -o {output.bam}")
         shell("samtools index {output.bam}")
@@ -62,6 +71,9 @@ rule chr12_split:
         "{outdir}/{name}.sorted"
     output:
         "{outdir}/{name}.chr12.sorted"
+    params:
+        outdir=outdir
+        name=name
     run:
         shell("samtools view {input} chr12 -b > {output}")
         shell("samtools index {output}")
@@ -72,6 +84,11 @@ rule cnvkit_cns:
         "{outdir}/{name}.chr12.sorted"
     output:
         "{tempdir}/cnvkit/{name}.chr12.cns"
+    params:
+        tempdir=tempdir
+        outdir=outdir
+        name=name
+        cnvkitref=cnvkitref
     shell:
         "cnvkit.py batch {input} -r {cnvkitref} -d {tempdir}/cnvkit/{name}.chr12"
 
@@ -80,6 +97,10 @@ rule cns2bed:
         "{tempdir}/cnvkit/{name}.chr12.cns"
     output:
         "{outdir}/{name}.chr12.bed"
+    params:
+        tempdir=tempdir
+        outdir=outdir
+        name=name
     run:
         shell("convert_cns_to_bed.py --cns_file={input}")
         shell("cp {tempdir}/cnvkit/{name}_CNV_CALLS.bed {output}")
@@ -89,6 +110,9 @@ rule bam2cfg:
         "{tempdir}/{name}.chr12.sorted"
     output:
         "{tempdir}/{name}.chr12.cfg"
+    params:
+        tempdir=tempdir
+        name=name
     shell:
         "bam2cfg.pl {input} > {output}"
 
@@ -97,15 +121,21 @@ rule breakdancer:
         "{tempdir}/{name}.chr12.cfg"
     output:
         "{tempdir}/{name}.chr12.brk"
+    params:
+        tempdir=tempdir
+        name=name
     shell:
-        "breakdancer-max {input} | tail -n +5 > {output}
-#make sure above line works with pipe
+        "breakdancer-max {input} | tail -n +5 > {output}"
 
 rule breakdancer2vcf:
     input:
         "{tempdir}/{name}.chr12.brk"
     output:
         "{outdir}/{name}.chr12.vcf"
+    params:
+        tempdir=tempdir
+        outdir=outdir
+        name=name
     shell:
         "breakdancer2vcf.py -i {input} -o {output}"
 
@@ -116,6 +146,9 @@ rule dmfinder:
         bam="{outdir}/{name}.chr12.sorted"
     output:
         "{outdir}/{name}.chr12.dmrpt"
+    params:
+        outdir=outdir
+        name=name
     shell:
-        "dm_find.pl --input_bam {input.bam} --sv {input.sv}--cn {input.cn} --report_file {output}
+        "dm_find.pl --input_bam {input.bam} --sv {input.sv}--cn {input.cn} --report_file {output}"
 
