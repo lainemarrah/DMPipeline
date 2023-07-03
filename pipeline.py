@@ -1,11 +1,25 @@
-sample = x
-id = x
-outdir = x
-tempdir = x
-bowtieidx = x
-cnvkitref = x
+import argparse
 
-#todo: assign variables by parsing from command line
+#todo: add threading for bowtie and cnvkit
+#todo: add info on where to get ref genome and how to make bowtie2 index
+
+parser = argparse.ArgumentParser(description='Input arguments necessary for running DMFinder.')
+parser.add_argument('-i', type=str, help='The SRA ID of your sample. This should be something like SRRXXXXXXX.')
+parser.add_argument('-n', type=str, help='The name of your sample. Output files will have this name.')
+parser.add_argument('-o', type=str, help='Choose a directory for output files created by this pipeline. This directory should contain an indexed and sorted BAM file.')
+parser.add_argument('-p', type=str, help='[Optional] If you want to multithread, choose number of threads here.')
+parser.add_argument('-r', type=str, help='[Optional for BED] Reference genome .cnn file. This is for the CNVkit portion of the pipeline.')
+parser.add_argument('-t', type=str, help='Choose a directory for temporary files to be downloaded to.')
+parser.add_argument('-x', type=str, help='[Optional for aligning] The Bowtie2 index name. This should be everything but the suffix for your Bowtie2 reference index files.'
+args = parser.parse_args()
+
+id = args.i
+sample = args.n
+outdir = args.o
+threads = args.p
+cnvkitref = args.r
+tempdir = args.t
+bowtieidx = args.x
 
 #output so it knows how to backtrack
 rule all:
