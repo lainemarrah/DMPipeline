@@ -2,6 +2,7 @@ import argparse
 
 #todo: add threading for bowtie and cnvkit
 #todo: add info on where to get ref genome and how to make bowtie2 index
+#todo: make conda environment with everything necessary in it for download?
 
 parser = argparse.ArgumentParser(description='Input arguments necessary for running DMFinder.')
 parser.add_argument('-i', type=str, help='The SRA ID of your sample. This should be something like SRRXXXXXXX.')
