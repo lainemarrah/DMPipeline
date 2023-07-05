@@ -13,7 +13,6 @@ parser.add_argument('-o', type=str, help='Choose a directory for output files cr
 parser.add_argument('-p', nargs='?', const=0, type=int, help='[Optional] If you want to multithread, choose number of threads here.')
 parser.add_argument('-r', nargs='?', type=str, help='[Optional for BED] Reference genome .cnn file. This is for the CNVkit portion of the pipeline.')
 parser.add_argument('-t', type=str, help='Choose a directory for temporary files to be downloaded to.')
-parser.add_argument('-x', nargs='?', type=str, help='[Optional for aligning] The Bowtie2 index name. This should be everything but the suffix for your Bowtie2 reference index files.'
 args = parser.parse_args()
 
 id = args.i
@@ -22,66 +21,11 @@ outdir = args.o
 threads = args.p
 cnvkitref = args.r
 tempdir = args.t
-bowtieidx = args.x
 
 #output so it knows how to backtrack
 rule all:
     input:
         "{sample}.dmrpt"
-
-#add a python if statement to see if aligning and sorting is needed
-rule fastp:
-    input:
-        i1="{tempdir}/{id}_1.fastq.gz"
-        i2="{tempdir}/{id}_2.fastq.gz"
-    output:
-        o1="{tempdir}/{id}_1.fastp.gz"
-        o2="{tempdir}/{id}_2.fastp.gz"
-    params:
-        tempdir=tempdir
-        id=id
-    run:
-        shell("fastp -z 1 -i {input.i1} -I {input.i2} -o {output.o1} -O {output.o2}")
-
-rule bowtie_align:
-    input:
-        i1="{tempdir}/{id}_1.fastp.gz"
-        i2="{tempdir}/{id}_2.fastp.gz"
-    output:
-        "{tempdir}/{name}.bam"
-    params:
-        tempdir=tempdir
-        id=id
-        name=name
-        bowtieidx=bowtieidx
-        threads=threads
-    shell:
-        "bowtie2 -x {bowtieidx} -p {threads} -1 {input.i1} -2 {input.i2} | samtools view -bS - > {output}"
-
-rule fixmate:
-    input:
-        "{tempdir}/{name}.bam"
-    output:
-        "{tempdir}/{name}.fixmate"
-    params:
-        tempdir=tempdir
-        name=name
-    shell:
-        "samtools fixmate -O bam {input} {output}"
-
-rule sort_and_index:
-    input:
-        "{tempdir}.fixmate"
-    output:
-        bam="{outdir}/{name}.sorted"
-        bai="{outdir}/{name}.sorted.bai"
-    params:
-        tempdir=tempdir
-        outdir=outdir
-        name=name
-    run:
-        shell("samtools sort {input} -m 20G -o {output.bam}")
-        shell("samtools index {output.bam}")
 
 rule chr12_split:
     input:
