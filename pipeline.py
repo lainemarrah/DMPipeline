@@ -1,17 +1,19 @@
 import argparse
 
-#todo: add threading for bowtie and cnvkit
-#todo: add info on where to get ref genome and how to make bowtie2 index
-#todo: make conda environment with everything necessary in it for download?
+#todo: add info on where to get ref genome for cnvkit and how to make bowtie2 index to readme
+#todo: make conda environment with everything necessary in it for download - this would make prereqs very easy
+#todo: figure out how to skip aligning if there is already a sorted bam, could make separate py scripts but there is probably a more elegant way
+#todo: add cleanup function to delete tempdir + files, find how to call it in workflow
+#todo: test on my machine
 
 parser = argparse.ArgumentParser(description='Input arguments necessary for running DMFinder.')
 parser.add_argument('-i', type=str, help='The SRA ID of your sample. This should be something like SRRXXXXXXX.')
 parser.add_argument('-n', type=str, help='The name of your sample. Output files will have this name.')
 parser.add_argument('-o', type=str, help='Choose a directory for output files created by this pipeline. This directory should contain an indexed and sorted BAM file.')
-parser.add_argument('-p', type=str, help='[Optional] If you want to multithread, choose number of threads here.')
-parser.add_argument('-r', type=str, help='[Optional for BED] Reference genome .cnn file. This is for the CNVkit portion of the pipeline.')
+parser.add_argument('-p', nargs='?', const=0, type=int, help='[Optional] If you want to multithread, choose number of threads here.')
+parser.add_argument('-r', nargs='?', type=str, help='[Optional for BED] Reference genome .cnn file. This is for the CNVkit portion of the pipeline.')
 parser.add_argument('-t', type=str, help='Choose a directory for temporary files to be downloaded to.')
-parser.add_argument('-x', type=str, help='[Optional for aligning] The Bowtie2 index name. This should be everything but the suffix for your Bowtie2 reference index files.'
+parser.add_argument('-x', nargs='?', type=str, help='[Optional for aligning] The Bowtie2 index name. This should be everything but the suffix for your Bowtie2 reference index files.'
 args = parser.parse_args()
 
 id = args.i
@@ -52,8 +54,9 @@ rule bowtie_align:
         id=id
         name=name
         bowtieidx=bowtieidx
+        threads=threads
     shell:
-        "bowtie2 -x {bowtieidx} -1 {input.i1} -2 {input.i2} | samtools view -bS - > {output}"
+        "bowtie2 -x {bowtieidx} -p {threads} -1 {input.i1} -2 {input.i2} | samtools view -bS - > {output}"
 
 rule fixmate:
     input:
@@ -66,7 +69,6 @@ rule fixmate:
     shell:
         "samtools fixmate -O bam {input} {output}"
 
-#make sure the indexing part works? not explicitly called by other rules
 rule sort_and_index:
     input:
         "{tempdir}.fixmate"
@@ -104,8 +106,9 @@ rule cnvkit_cns:
         outdir=outdir
         name=name
         cnvkitref=cnvkitref
+        threads=threads
     shell:
-        "cnvkit.py batch {input} -r {cnvkitref} -d {tempdir}/cnvkit/{name}.chr12"
+        "cnvkit.py batch {input} -r {cnvkitref} -p {threads}-d {tempdir}/cnvkit/{name}.chr12"
 
 rule cns2bed:
     input:
