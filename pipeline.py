@@ -27,24 +27,24 @@ rule all:
     input:
         "{sample}.dmrpt"
 
-rule chr12_split:
-    input:
-        "{outdir}/{name}.sorted"
-    output:
-        "{outdir}/{name}.chr12.sorted"
-    params:
-        outdir=outdir
-        name=name
-    run:
-        shell("samtools view {input} chr12 -b > {output}")
-        shell("samtools index {output}")
-        shell("samtools flagstat {output}")
+#rule chr12_split:
+#    input:
+#        "{outdir}/{name}.sorted"
+#    output:
+#        "{outdir}/{name}.chr12.sorted"
+#    params:
+#        outdir=outdir
+#        name=name
+#    run:
+#        shell("samtools view {input} chr12 -b > {output}")
+#        shell("samtools index {output}")
+#        shell("samtools flagstat {output}")
 
 rule cnvkit_cns:
     input:
-        "{outdir}/{name}.chr12.sorted"
+        "{outdir}/{name}.sorted"
     output:
-        "{tempdir}/cnvkit/{name}.chr12.cns"
+        "{tempdir}/cnvkit/{name}.cns"
     params:
         tempdir=tempdir
         outdir=outdir
@@ -52,13 +52,13 @@ rule cnvkit_cns:
         cnvkitref=cnvkitref
         threads=threads
     shell:
-        "cnvkit.py batch {input} -r {cnvkitref} -p {threads}-d {tempdir}/cnvkit/{name}.chr12"
+        "cnvkit.py batch {input} -r {cnvkitref} -p {threads}-d {tempdir}/cnvkit/{name}"
 
 rule cns2bed:
     input:
-        "{tempdir}/cnvkit/{name}.chr12.cns"
+        "{tempdir}/cnvkit/{name}.cns"
     output:
-        "{outdir}/{name}.chr12.bed"
+        "{outdir}/{name}.bed"
     params:
         tempdir=tempdir
         outdir=outdir
@@ -69,9 +69,9 @@ rule cns2bed:
 
 rule bam2cfg:
     input:
-        "{tempdir}/{name}.chr12.sorted"
+        "{tempdir}/{name}.sorted"
     output:
-        "{tempdir}/{name}.chr12.cfg"
+        "{tempdir}/{name}.cfg"
     params:
         tempdir=tempdir
         name=name
@@ -80,9 +80,9 @@ rule bam2cfg:
 
 rule breakdancer:
     input:
-        "{tempdir}/{name}.chr12.cfg"
+        "{tempdir}/{name}.cfg"
     output:
-        "{tempdir}/{name}.chr12.brk"
+        "{tempdir}/{name}.brk"
     params:
         tempdir=tempdir
         name=name
@@ -91,9 +91,9 @@ rule breakdancer:
 
 rule breakdancer2vcf:
     input:
-        "{tempdir}/{name}.chr12.brk"
+        "{tempdir}/{name}.brk"
     output:
-        "{outdir}/{name}.chr12.vcf"
+        "{outdir}/{name}.vcf"
     params:
         tempdir=tempdir
         outdir=outdir
@@ -103,11 +103,11 @@ rule breakdancer2vcf:
 
 rule dmfinder:
     input:
-        sv="{outdir}/{name}.chr12.vcf"
-        cn="{outdir}/{name}.chr12.bed"
-        bam="{outdir}/{name}.chr12.sorted"
+        sv="{outdir}/{name}.vcf"
+        cn="{outdir}/{name}.bed"
+        bam="{outdir}/{name}.sorted"
     output:
-        "{outdir}/{name}.chr12.dmrpt"
+        "{outdir}/{name}.dmrpt"
     params:
         outdir=outdir
         name=name
