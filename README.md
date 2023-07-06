@@ -19,7 +19,7 @@ Scripts to download:
 * breakdancer2vcf.py: https://github.com/rmarduga/DMFinder/blob/master/tools/breakdancer2vcf.py
 
 Quickstart:
-#todo: make downloadable tarball of scripts
+
 Once all prerequisites are installed as well as DMPipeline, configure a Conda environment by running the code below to use the rest of the prerequisites. If you don't already have conda, see here: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
 ```
 conda env create -n dmpipeline --file environment.yml
@@ -30,6 +30,7 @@ Run the pipeline by running:
 #example code
 ```
 This will yield several files in your chosen output directory. These include: a sorted and indexed BAM file, a sorted and indexed BAM file split to only the 12th chromosome, a BED copy number file, a VCF structural variant file, and the DMFinder output files (which have suffixes .dmrpt and .dmgraph). 
+
 You can then run the following to create a summary file of all desired samples, where the input file is the same as the sample input file used for the previous pipeline:
 ```
 summary_file.sh [INPUT_FILE] [OUTPUT_FILE]
