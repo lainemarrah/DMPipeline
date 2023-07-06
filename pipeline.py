@@ -1,8 +1,6 @@
 import argparse
 
 #todo: add info on where to get ref genome for cnvkit and how to make bowtie2 index to readme
-#todo: make conda environment with everything necessary in it for download - this would make prereqs very easy
-#todo: figure out how to skip aligning if there is already a sorted bam, could make separate py scripts but there is probably a more elegant way
 #todo: add cleanup function to delete tempdir + files, find how to call it in workflow
 #todo: test on my machine
 
@@ -11,7 +9,7 @@ parser.add_argument('-i', type=str, help='The SRA ID of your sample. This should
 parser.add_argument('-n', type=str, help='The name of your sample. Output files will have this name.')
 parser.add_argument('-o', type=str, help='Choose a directory for output files created by this pipeline. This directory should contain an indexed and sorted BAM file.')
 parser.add_argument('-p', nargs='?', const=0, type=int, help='[Optional] If you want to multithread, choose number of threads here.')
-parser.add_argument('-r', nargs='?', type=str, help='[Optional for BED] Reference genome .cnn file. This is for the CNVkit portion of the pipeline.')
+parser.add_argument('-r', nargs='?', const='AA_data_repo/hg19/hg19_cnvkit_filtered_ref.cnn', type=str, help='[Optional if not using AA repo file] Reference genome .cnn file. This is for the CNVkit portion of the pipeline.')
 parser.add_argument('-t', type=str, help='Choose a directory for temporary files to be downloaded to.')
 args = parser.parse_args()
 
