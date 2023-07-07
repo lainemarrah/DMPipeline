@@ -21,7 +21,7 @@ rule bowtie_align:
     output:
         "config[tempdir]/config[name].bam"
     shell:
-        "bowtie2 -x hg19/hg19full -p "+threads+" -1 {input.i1} -2 {input.i2} | samtools view -bS - > {output}"
+        "bowtie2 -x hg19/hg19full -p {config[threads]} -1 {input.i1} -2 {input.i2} | samtools view -bS - > {output}"
 
 rule fixmate:
     input:
