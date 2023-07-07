@@ -10,7 +10,6 @@ User-friendly pipeline to predict double minutes with DMFinder
 * Conda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
 * Picard: https://github.com/broadinstitute/picard/releases/tag/3.0.0
 * Breakdancer: https://github.com/genome/breakdancer
-* CNVkit: https://github.com/etal/cnvkit
 * DMFinder: https://github.com/rmarduga/DMFinder
 
 Scripts to download:
@@ -30,16 +29,18 @@ git clone https://github.com/lainemarrah/DMPipeline
 Next, configure the conda environments by running the code below. 
 ```
 cd DMPipeline
-conda env create -n dmpipeline --file envs/environment.yml
-conda env create -n breakdancer --file envs/bd-env.yml
-conda env create -n cnvkit --file envs/cnv-env.yml
+conda env create -n bowtie2 --file envs/bowtie2-env.yml
+conda env create -n cnvkit --file envs/cnvkit-env.yml
+conda env create -n snakemake --file envs/snakemake-env.yml
 ```
 
-Run the pipeline by running:
+**Basic Usage**
+
+Run the general pipeline by running:
 ```
 #example code
 ```
-This will yield several files in your chosen output directory. These include: a sorted and indexed BAM file, a sorted and indexed BAM file split to only the 12th chromosome, a BED copy number file, a VCF structural variant file, and the DMFinder output files (which have suffixes .dmrpt and .dmgraph). 
+This will yield several files in your chosen output directory. These include: a sorted and indexed BAM file, a BED copy number file, a VCF structural variant file, and the DMFinder output files (which have suffixes .dmrpt and .dmgraph). 
 
 You can then run the following to create a summary file of all desired samples, where the input file is the same as the sample input file used for the previous pipeline:
 ```
