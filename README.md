@@ -1,9 +1,10 @@
 # DMPipeline
 User-friendly pipeline to predict double minutes with DMFinder
 
-**Prerequisites:**
+**Prerequisites**
+
+Tools to install:
 * GCC (9.2.0+)
-* SRAToolkit (2.10.5+)
 * SAMTools (1.12+)
 * Perl (5+)
 * Python (3.7.16+)
@@ -19,7 +20,7 @@ Scripts to download:
 
 Make sure these scripts are located in the directory DMPipeline/scripts.
 
-**Setup:**
+**Setup**
 
 Once all prerequisites listed above are downloaded, install DMPipeline by running:
 ```
