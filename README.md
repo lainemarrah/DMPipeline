@@ -35,6 +35,14 @@ conda env create -n cnvkit --file envs/cnvkit-env.yml
 conda env create -n snakemake --file envs/snakemake-env.yml
 ```
 
+Download the hg19 reference genome by using the below code. This will also create a bowtie index that will help you align files later.
+```
+cd DMPipeline
+wget https://datasets.genepattern.org/data/module_support_files/AmpliconArchitect/hg19.tar.gz
+tar -zxf hg19.tar.gz
+scripts/align_hg19.sh
+```
+
 **Basic Usage**
 
 Run the general pipeline by running:
@@ -45,5 +53,5 @@ This will yield several files in your chosen output directory. These include: a 
 
 You can then run the following to create a summary file of all desired samples, where the input file is the same as the sample input file used for the previous pipeline:
 ```
-summary_file.sh [INPUT_FILE] [OUTPUT_FILE]
+scripts/summary_file.sh [INPUT_FILE] [OUTPUT_FILE]
 ```
