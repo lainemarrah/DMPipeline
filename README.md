@@ -1,30 +1,40 @@
 # DMPipeline
 User-friendly pipeline to predict double minutes with DMFinder
 
-Prerequisites:
+**Prerequisites:**
 * GCC (9.2.0+)
 * SRAToolkit (2.10.5+)
 * SAMTools (1.12+)
 * Perl (5+)
 * Python (3.7.16+)
+* Conda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
 * Picard: https://github.com/broadinstitute/picard/releases/tag/3.0.0
 * Breakdancer: https://github.com/genome/breakdancer
 * CNVkit: https://github.com/etal/cnvkit
 * DMFinder: https://github.com/rmarduga/DMFinder
-* Conda environment found
 
 Scripts to download:
 * convert_cns_to_bed.py: https://github.com/AmpliconSuite/AmpliconSuite-pipeline/blob/master/scripts/convert_cns_to_bed.py
 * bam2cfg.pl: https://github.com/genome/breakdancer/blob/master/perl/bam2cfg.pl
 * breakdancer2vcf.py: https://github.com/rmarduga/DMFinder/blob/master/tools/breakdancer2vcf.py
 
-Quickstart:
+Make sure these scripts are located in the directory DMPipeline/scripts.
 
-Once all prerequisites are installed as well as DMPipeline, configure a Conda environment by running the code below to use the rest of the prerequisites. If you don't already have conda, see here: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
+**Setup:**
+
+Once all prerequisites listed above are downloaded, install DMPipeline by running:
 ```
-conda env create -n dmpipeline --file environment.yml
-conda activate dmpipeline
+git clone https://github.com/lainemarrah/DMPipeline
 ```
+
+Next, configure the conda environments by running the code below. 
+```
+cd DMPipeline
+conda env create -n dmpipeline --file envs/environment.yml
+conda env create -n breakdancer --file envs/bd-env.yml
+conda env create -n cnvkit --file envs/cnv-env.yml
+```
+
 Run the pipeline by running:
 ```
 #example code
