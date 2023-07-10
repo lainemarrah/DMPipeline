@@ -18,7 +18,7 @@ Scripts to download:
 * bam2cfg.pl: https://github.com/genome/breakdancer/blob/master/perl/bam2cfg.pl
 * breakdancer2vcf.py: https://github.com/rmarduga/DMFinder/blob/master/tools/breakdancer2vcf.py
 
-Make sure these scripts are located in the directory DMPipeline/scripts.
+Make sure these scripts are located in the directory DMPipeline/scripts and are executable (may need to run chmod u+x [SCRIPT NAME]).
 
 **Setup**
 
@@ -35,7 +35,7 @@ conda env create -n cnvkit --file envs/cnvkit-env.yml
 conda env create -n snakemake --file envs/snakemake-env.yml
 ```
 
-Download the hg19 reference genome by using the below code. This will also create a bowtie index that will help you align files later.
+Download the hg19 reference genome by using the below code. This will also create a bowtie index that will help you align files later. Note the bowtie indexing script takes a significant amount of time so you may want to do this on HPC.
 ```
 cd DMPipeline
 wget https://datasets.genepattern.org/data/module_support_files/AmpliconArchitect/hg19.tar.gz
@@ -44,14 +44,25 @@ scripts/align_hg19.sh
 ```
 
 **Basic Usage**
+The input file should be a text file where each row contains the SRA ID of the sample (such as SRRXXXXX), a tab, and then the name of the sample (such as LN-18). If you do not have this, it can be created automatically from the downloadable SRA Run Table using:
+```
+scripts/inputfile.sh [SRA_RUN_TABLE_FILE]
+```
 
 Run the general pipeline by running:
 ```
 #example code
 ```
-This will yield several files in your chosen output directory. These include: a sorted and indexed BAM file, a BED copy number file, a VCF structural variant file, and the DMFinder output files (which have suffixes .dmrpt and .dmgraph). 
 
-You can then run the following to create a summary file of all desired samples, where the input file is the same as the sample input file used for the previous pipeline:
+This will submit a job for each of the provided samples, and ultimately yields several files in your chosen output directory. These include: a sorted and indexed BAM file, a BED copy number file, a VCF structural variant file, and the DMFinder output files (which have suffixes .dmrpt and .dmgraph). 
+
+
+Alternatively, if you already have a sorted and indexed BAM file for your sample/s, you can run the pipeline steps directly:
+```
+#example code
+```
+
+You can then run the following to create a summary file of all desired samples, where the input file is the same as the sample input file used for the previous script loop.sh:
 ```
 scripts/summary_file.sh [INPUT_FILE] [OUTPUT_FILE]
 ```
