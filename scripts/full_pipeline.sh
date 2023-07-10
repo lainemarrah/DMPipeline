@@ -15,20 +15,21 @@ Help()
    echo "p     [Optional] If you want to multithread, choose the number of threads." 
 }
 
-f1=''
-f2=''
-id=''
+fastq1=''
+fastq2=''
 name=''
 outdir=''
 threads=0
 
 while getopts ":hi:n:o:t:p:r:t" option; do
    case "$option" in
+      f1) #assign fastq1
+	 fastq1="$OPTARG";;
+      f2) #assign fastq2
+      	 fastq2="$OPTARG";;
       h) #display Help
          Help
          exit;;
-      i) #assign id
-         id="$OPTARG";;
       n) #assign name
          name="$OPTARG";;
       o) #assign output dir
@@ -41,11 +42,12 @@ while getopts ":hi:n:o:t:p:r:t" option; do
    esac
 done
 
+id="$(echo ${fastq1} | grep -oP "SRR.......")"
+
 #making a dir for new files
 if [ ! -d ${outdir} ]; then
         mkdir ${outdir}
 fi
-cd ${outdir}
 
 echo "Making and sorting BAM file..."
 
@@ -55,50 +57,49 @@ if [ -f ${name}.sorted ]; then
 else
         source /home/lm2ku/.bashrc
         conda activate bowtie2
-        bowtie2  -p ${threads} -x hg19/hg19full -1 ${fastq1} -2 ${fastq2} | samtools view -bS > ${name}.bam
+        bowtie2  -p ${threads} -x hg19/hg19full -1 ${fastq1} -2 ${fastq2} | samtools view -bS > ${outdir}/${name}.bam
         conda deactivate
 
-        samtools fixmate -O bam ${name}.bam ${name}.fixmate
-        if [ -s ${name}.fixmate ]; then
-                rm ${name}.bam
+        samtools fixmate -O bam ${outdir}/${name}.bam ${outdir}/${name}.fixmate
+        if [ -s ${outdir}/${name}.fixmate ]; then
+                rm ${outdir}/${name}.bam
         fi
 
-        samtools sort -m 20G -o ${name}.sorted ${name}.fixmate
-        if [ -s ${name}.sorted ]; then
-                rm ${name}.fixmate
+        samtools sort -m 20G -o ${outdir}/${name}.sorted ${outdir}/${name}.fixmate
+        if [ -s ${outdir}/${name}.sorted ]; then
+                rm ${outdir}/${name}.fixmate
         fi
 
-        samtools index ${name}.sorted
+        samtools index ${outdir}/${name}.sorted
 fi
 
 
-if [ -f ${name}.chr12.sorted ]; then
+if [ -f ${outdir}/${name}.chr12.sorted ]; then
         echo "Sorted and split BAM already exists"
 else
-        samtools view ${name}.sorted chr12 -b > ${name}.chr12
-        java -jar picard.jar AddOrReplaceReadGroups I=${name}.chr12 O=${name}.chr12.sorted SORT_ORDER=coordinate RGID=${id} RGLB=lib1 RGPL=ILLUMINA RGPU=unit1 RGSM=${name}
-        rm ${name}.chr12
-        samtools index ${name}.chr12.sorted
-        samtools flagstat ${name}.chr12.sorted
+        samtools view ${outdir}/${name}.sorted chr12 -b > ${outdir}/${name}.chr12
+        java -jar picard.jar AddOrReplaceReadGroups I=${outdir}/${name}.chr12 O=${outdir}/${name}.chr12.sorted SORT_ORDER=coordinate RGID=${id} RGLB=lib1 RGPL=ILLUMINA RGPU=unit1 RGSM=${name}
+        rm ${outdir}/${name}.chr12
+        samtools index ${outdir}/${name}.chr12.sorted
+        samtools flagstat ${outdir}/${name}.chr12.sorted
 fi
 
-if [ ! -f ${name}.chr12.sorted.bai ]; then
-        samtools index ${name}.chr12.sorted
-        samtools flagstat ${name}.chr12.sorted
+if [ ! -f ${outdir}/${name}.chr12.sorted.bai ]; then
+        samtools index ${outdir}/${name}.chr12.sorted
+        samtools flagstat ${outdir}/${name}.chr12.sorted
 fi
 
 echo "Making BED file..."
 #create cn file
-if [ -f ${name}.chr12.bed ]; then
+if [ -f ${outdir}/${name}.chr12.bed ]; then
 	echo "BED file already exists"
 else
 	if [ ! -d ${outdir}/cnvkit ]; then
       		mkdir ${outdir}/cnvkit
 	fi
-	cd ${outdir}/cnvkit
 	cnvkit.py batch ${outdir}/${name}.chr12.sorted -r hg19/hg19_cnvkit_filtered_ref.cnn -p ${threads} -d ${outdir}/cnvkit
-	scripts/convert_cns_to_bed.py --cns_file=${name}.chr12.cns
-	cp ${name}_CNV_CALLS.bed ${outdir}/${name}.chr12.bed
+	scripts/convert_cns_to_bed.py --cns_file=${outdir}/${name}.chr12.cns
+	cp ${outdir}/cnvkit/${name}_CNV_CALLS.bed ${outdir}/${name}.chr12.bed
 fi
 
 if [ -s ${outdir}/${name}.chr12.bed ]; then
@@ -107,20 +108,24 @@ fi
 
 echo "Making VCF file..."
 #create sv file
-if [ -f ${name}.chr12.vcf ]; then
+if [ -f ${outdir}/${name}.chr12.vcf ]; then
   echo "VCF file already exists"
 else
-	scripts/bam2cfg.pl ${outdir}/${name}.chr12.sorted > ${name}.chr12.cfg
-	breakdancer-max ${name}.chr12.cfg | tail -n +5 > ${name}.chr12.brk
-	breakdancer2vcf.py -i ${name}.chr12.brk -o ${outdir}/${name}.chr12.vcf
+	scripts/bam2cfg.pl ${outdir}/${name}.chr12.sorted > ${outdir}/${name}.chr12.cfg
+	breakdancer-max ${outdir}/${name}.chr12.cfg | tail -n +5 > ${outdir}/${name}.chr12.brk
+	scripts/breakdancer2vcf.py -i ${outdir}/${name}.chr12.brk -o ${outdir}/${name}.chr12.vcf
+fi
+
+if [ -s ${outdir}/${name}.chr12.vcf ]; then
+	rm ${outdir}/${name}.chr12.cfg
+ 	rm ${outdir}/${name}.chr12.brk
 fi
 
 echo "DMFinder prerequisite files complete, running DMFinder..."
 
-cd ${outdir}
 #actually run dmfinder
-if [ -s ${name}.chr12.vcf -a -s ${name}.chr12.bed ]; then
-	/home/lm2ku/DMFinder/dm_find.pl --input_bam ${name}.chr12.sorted --sv ${name}.chr12.vcf --cn ${name}.chr12.bed --report_file ${name}.chr12.dmrpt --graph_file ${name}.chr12.dmgraph --verbose
+if [ -s ${outdir}/${name}.chr12.vcf -a -s ${outdir}/${name}.chr12.bed ]; then
+	dm_find.pl --input_bam ${outdir}/${name}.chr12.sorted --sv ${outdir}/${name}.chr12.vcf --cn ${outdir}/${name}.chr12.bed --report_file ${outdir}/${name}.chr12.dmrpt --graph_file ${outdir}/${name}.chr12.dmgraph --verbose
 else
         echo "Your VCF file, BED file, or both are empty."
 fi
