@@ -3,6 +3,8 @@ User-friendly pipeline to predict double minutes with DMFinder
 
 **Prerequisites**
 
+Your sequencing data should be paired-end, whole genome sequencing.
+
 Tools to install:
 * GCC (9.2.0+)
 * SAMTools (1.12+)
@@ -13,12 +15,14 @@ Tools to install:
 * Breakdancer: https://github.com/genome/breakdancer
 * DMFinder: https://github.com/rmarduga/DMFinder
 
+All of the above should be located in your $PATH.
+
 Scripts to download:
 * convert_cns_to_bed.py: https://github.com/AmpliconSuite/AmpliconSuite-pipeline/blob/master/scripts/convert_cns_to_bed.py
 * bam2cfg.pl: https://github.com/genome/breakdancer/blob/master/perl/bam2cfg.pl
 * breakdancer2vcf.py: https://github.com/rmarduga/DMFinder/blob/master/tools/breakdancer2vcf.py
 
-Make sure these scripts are located in the directory DMPipeline/scripts and are executable (may need to run chmod u+x [SCRIPT NAME]).
+All of the above scripts should be located in the directory DMPipeline/scripts and executable (may need to run chmod u+x [SCRIPT NAME]).
 
 **Setup**
 
@@ -32,7 +36,7 @@ Next, configure the conda environments by running the code below.
 cd DMPipeline
 conda env create -n bowtie2 --file envs/bowtie2-env.yml
 conda env create -n cnvkit --file envs/cnvkit-env.yml
-conda env create -n snakemake --file envs/snakemake-env.yml
+#conda env create -n snakemake --file envs/snakemake-env.yml
 ```
 
 Download the hg19 reference genome by using the below code. This will also create a bowtie index that will help you align files later. Note the bowtie indexing script takes a significant amount of time so you may want to do this on HPC.
@@ -43,26 +47,31 @@ tar -zxf hg19.tar.gz
 scripts/align_hg19.sh
 ```
 
-**Basic Usage**
-The input file should be a text file where each row contains the SRA ID of the sample (such as SRRXXXXX), a tab, and then the name of the sample (such as LN-18). If you do not have this, it can be created automatically from the downloadable SRA Run Table using:
-```
-scripts/inputfile.sh [SRA_RUN_TABLE_FILE]
-```
+**Usage**
 
-Run the general pipeline by running:
+To run an individual sample, run: 
 ```
-#example code
+scripts/pipeline.sh [-h] [-f1 FASTQ_FILE1] [-f2 FASTQ_FILE2] [-n SAMPLE_NAME] [-o OUTPUT_DIRECTORY] [-p THREADS]
 ```
+Options:
+* f1:	First paired-end fastq file filepath.
+* f2:	Second paired-end fastq file filepath.
+* h:     Print Help.
+* n:     The name of your sample. Output files will have this name.
+* o:     Choose a directory for output files created by this pipeline. **If you are providing your own sorted and indexed BAM file**, it (as well as its index) should be in this directory.
+* p:     [Optional] If you want to multithread, choose the number of threads. This will default to 0, but multithreading is recommended, especially if you are not providing a sorted BAM file.
 
-This will submit a job for each of the provided samples, and ultimately yields several files in your chosen output directory. These include: a sorted and indexed BAM file, a BED copy number file, a VCF structural variant file, and the DMFinder output files (which have suffixes .dmrpt and .dmgraph). 
-
-
-Alternatively, if you already have a sorted and indexed BAM file for your sample/s, you can run the pipeline steps directly:
+To run several samples on UVA Rivanna, run:
 ```
-#example code
+scripts/loop.sh [INPUT_FILE] [-o OUTPUT_DIRECTORY] [-p THREADS]
 ```
+This input file should be tab-separated, with the first column being the first fastq file, the second column being the second fastq file, and the third column being the sample name. Within the output directory, a separate directory will be created for each sample. This will submit a Rivanna job for each of the provided samples.
 
-You can then run the following to create a summary file of all desired samples, where the input file is the same as the sample input file used for the previous script loop.sh:
+**Output**
+
+In your chosen output directory, the pipeline will output eight files. These include: a sorted and indexed BAM file, a sorted and indexed BAM file split to only chromosome 12, a BED copy number file for chromosome 12, a VCF structural variant file for chromosome 12, and the DMFinder output files for chromosome 12 (which have suffixes .dmrpt and .dmgraph). 
+
+Once all the samples have run successfully, you can then run the following to create a basic summary file, where the input file is the same as the sample input file used for the previous script loop.sh:
 ```
 scripts/summary_file.sh [INPUT_FILE] [OUTPUT_FILE]
 ```
