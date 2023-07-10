@@ -73,5 +73,6 @@ In your chosen output directory, the pipeline will output eight files. These inc
 
 Once all the samples have run successfully, you can then run the following to create a basic summary file, where the input file is the same as the sample input file used for the previous script loop.sh:
 ```
+cd [OUTPUT_DIRECTORY]
 scripts/summary_file.sh [INPUT_FILE] [OUTPUT_FILE]
 ```
