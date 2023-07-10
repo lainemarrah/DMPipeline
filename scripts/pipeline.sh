@@ -4,14 +4,13 @@ Help()
 {  
    #show help
    echo
-   echo "Syntax: full_pipeline.sh [-h] [-i SRA_ID] [-n SAMPLE_NAME] [-o OUTPUT_DIRECTORY] [-p THREADS]"
+   echo "Syntax: pipeline.sh [-h] [-f1 FASTQ_FILE1] [-f2 FASTQ_FILE2] [-n SAMPLE_NAME] [-o OUTPUT_DIRECTORY] [-p THREADS]"
    echo "options:"  
    echo "f1	First paired-end fastq file filepath."
    echo "f2	Second paired-end fastq file filepath."
    echo "h     Print this Help."
-   echo "i     The SRA ID of your sample. This should be something like SRRXXXXXXX."
    echo "n     The name of your sample. Output files will have this name."
-   echo "o     Choose a directory for output files created by this pipeline. This directory should contain an indexed and sorted BAM file."
+   echo "o     Choose a directory for output files created by this pipeline. If you are providing your own sorted and indexed BAM file, it should be in this directory."
    echo "p     [Optional] If you want to multithread, choose the number of threads." 
 }
 
