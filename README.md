@@ -51,7 +51,7 @@ scripts/align_hg19.sh
 
 To run an individual sample, run: 
 ```
-scripts/pipeline.sh [-h] -f1 [FASTQ_FILE1] -f2 [FASTQ_FILE2] -n [SAMPLE_NAME] -o [OUTPUT_DIRECTORY] [-p THREADS]
+scripts/pipeline.sh [-h] -f1 [FASTQ_FILE1] -f2 [FASTQ_FILE2] -n [SAMPLE_NAME] -o [OUTPUT_DIRECTORY] [-p THREADS] [-c CHROMOSOME]
 ```
 Options:
 * f1:	First paired-end fastq file filepath.
@@ -60,12 +60,14 @@ Options:
 * n:     The name of your sample. Output files will have this name.
 * o:     Choose a directory for output files created by this pipeline. **If you are providing your own sorted and indexed BAM file**, it (as well as its index) should be in this directory.
 * p:     [Optional] If you want to multithread, choose the number of threads. This will default to 0, but multithreading is recommended, especially if you are not providing a sorted BAM file.
+* c:     [Optional] If you would like to limit your DM search to a single chromosome, specify here. The format should look like 'chr12'. This is recommended if you are targeting a specific gene, as it makes the operation much faster.
+
 
 To run several samples on UVA Rivanna, run:
 ```
-scripts/loop.sh [INPUT_FILE] -o [OUTPUT_DIRECTORY] -p [THREADS]
+scripts/loop.sh [INPUT_FILE] -o [OUTPUT_DIRECTORY] [-p THREADS] [-c CHROMOSOME]
 ```
-This input file should be tab-separated, with the first column being the first fastq file, the second column being the second fastq file, and the third column being the sample name. Within the output directory, a separate directory will be created for each sample. This will submit a Rivanna job for each of the provided samples.
+This input file should be tab-separated, with the first column being the first fastq file, the second column being the second fastq file, and the third column being the sample name. Within the output directory, a separate directory will be created for each sample. This will submit a Rivanna job for each of the provided samples. Threads and Chromosome fields are the same as the above.
 
 **Output**
 
