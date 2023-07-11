@@ -4,7 +4,7 @@ Help()
 {  
    #show help
    echo
-   echo "Syntax: pipeline.sh [-h] [-f1 FASTQ_FILE1] [-f2 FASTQ_FILE2] [-n SAMPLE_NAME] [-o OUTPUT_DIRECTORY] [-p THREADS]"
+   echo "Syntax: pipeline.sh [-h] -f1 [FASTQ_FILE1] -f2 [FASTQ_FILE2] -n [SAMPLE_NAME] -o [OUTPUT_DIRECTORY] [-p THREADS] [-c CHROMOSOME]"
    echo "options:"  
    echo "f1	First paired-end fastq file filepath."
    echo "f2	Second paired-end fastq file filepath."
@@ -12,12 +12,14 @@ Help()
    echo "n     The name of your sample. Output files will have this name."
    echo "o     Choose a directory for output files created by this pipeline. If you are providing your own sorted and indexed BAM file, it should be in this directory."
    echo "p     [Optional] If you want to multithread, choose the number of threads." 
+   echo "c     [Optional] If you would like to limit your DM search to a single chromosome, specify here. The format should look like 'chr12'."
 }
 
 fastq1=''
 fastq2=''
 name=''
 outdir=''
+chr=""
 threads=0
 
 while getopts ":hi:n:o:t:p:r:t" option; do
@@ -35,6 +37,8 @@ while getopts ":hi:n:o:t:p:r:t" option; do
          outdir="$OPTARG";;
       p) #number of threads
          threads="$OPTARG";;
+      c) #chromosome
+      	 chr="$OPTARG";;
      \?) #invalid option
          echo "Error: Invalid option"
          exit;;
@@ -64,67 +68,76 @@ else
                 rm ${outdir}/${name}.bam
         fi
 
-        samtools sort -m 20G -o ${outdir}/${name}.sorted ${outdir}/${name}.fixmate
-        if [ -s ${outdir}/${name}.sorted ]; then
+        samtools sort -m 20G -o ${outdir}/${name}.sort ${outdir}/${name}.fixmate
+        if [ -s ${outdir}/${name}.sort ]; then
                 rm ${outdir}/${name}.fixmate
         fi
 
-        samtools index ${outdir}/${name}.sorted
+        samtools index ${outdir}/${name}.sort
 fi
 
-
-if [ -f ${outdir}/${name}.chr12.sorted ]; then
-        echo "Sorted and split BAM already exists"
+if [ "${chr}" != "" ]; then
+	if [ -f ${outdir}/${name}.${chr}.sorted ]; then
+        	echo "Split BAM already exists"
+	else
+        	samtools view ${outdir}/${name}.sort ${chr} -b > ${outdir}/${name}.${chr}
+        	java -jar picard.jar AddOrReplaceReadGroups I=${outdir}/${name}.${chr} O=${outdir}/${name}.${chr}.sorted SORT_ORDER=coordinate RGID=${id} RGLB=lib1 RGPL=ILLUMINA RGPU=unit1 RGSM=${name}
+        	rm ${outdir}/${name}.${chr}
+        	samtools index ${outdir}/${name}.${chr}.sorted
+        	samtools flagstat ${outdir}/${name}.${chr}.sorted
+	 	chr=".${chr}"
+	fi
 else
-        samtools view ${outdir}/${name}.sorted chr12 -b > ${outdir}/${name}.chr12
-        java -jar picard.jar AddOrReplaceReadGroups I=${outdir}/${name}.chr12 O=${outdir}/${name}.chr12.sorted SORT_ORDER=coordinate RGID=${id} RGLB=lib1 RGPL=ILLUMINA RGPU=unit1 RGSM=${name}
-        rm ${outdir}/${name}.chr12
-        samtools index ${outdir}/${name}.chr12.sorted
-        samtools flagstat ${outdir}/${name}.chr12.sorted
+	java -jar picard.jar AddOrReplaceReadGroups I=${outdir}/${name}.sort O=${outdir}/${name}.sorted SORT_ORDER=coordinate RGID=${id} RGLB=lib1 RGPL=ILLUMINA RGPU=unit1 RGSM=${name}
+	samtools index ${outdir}/${name}.sorted
+	samtools flagstat ${outdir}/${name}.sorted
+
 fi
 
-if [ ! -f ${outdir}/${name}.chr12.sorted.bai ]; then
-        samtools index ${outdir}/${name}.chr12.sorted
-        samtools flagstat ${outdir}/${name}.chr12.sorted
+chrfile=
+
+if [ ! -f ${outdir}/${name}${chr}.sorted.bai ]; then
+        samtools index ${outdir}/${name}${chr}.sorted
+        samtools flagstat ${outdir}/${name}${chr}.sorted
 fi
 
 echo "Making BED file..."
 #create cn file
-if [ -f ${outdir}/${name}.chr12.bed ]; then
+if [ -f ${outdir}/${name}${chr}.bed ]; then
 	echo "BED file already exists"
 else
 	if [ ! -d ${outdir}/cnvkit ]; then
       		mkdir ${outdir}/cnvkit
 	fi
-	cnvkit.py batch ${outdir}/${name}.chr12.sorted -r hg19/hg19_cnvkit_filtered_ref.cnn -p ${threads} -d ${outdir}/cnvkit
-	scripts/convert_cns_to_bed.py --cns_file=${outdir}/${name}.chr12.cns
-	cp ${outdir}/cnvkit/${name}_CNV_CALLS.bed ${outdir}/${name}.chr12.bed
+	cnvkit.py batch ${outdir}/${name}${chr}.sorted -r hg19/hg19_cnvkit_filtered_ref.cnn -p ${threads} -d ${outdir}/cnvkit
+	scripts/convert_cns_to_bed.py --cns_file=${outdir}/${name}${chr}.cns
+	cp ${outdir}/cnvkit/${name}_CNV_CALLS.bed ${outdir}/${name}${chr}.bed
 fi
 
-if [ -s ${outdir}/${name}.chr12.bed ]; then
+if [ -s ${outdir}/${name}${chr}.bed ]; then
 	rm -r ${outdir}/cnvkit
 fi
 
 echo "Making VCF file..."
 #create sv file
-if [ -f ${outdir}/${name}.chr12.vcf ]; then
+if [ -f ${outdir}/${name}${chr}.vcf ]; then
   echo "VCF file already exists"
 else
-	scripts/bam2cfg.pl ${outdir}/${name}.chr12.sorted > ${outdir}/${name}.chr12.cfg
-	breakdancer-max ${outdir}/${name}.chr12.cfg | tail -n +5 > ${outdir}/${name}.chr12.brk
-	scripts/breakdancer2vcf.py -i ${outdir}/${name}.chr12.brk -o ${outdir}/${name}.chr12.vcf
+	scripts/bam2cfg.pl ${outdir}/${name}${chr}.sorted > ${outdir}/${name}${chr}.cfg
+	breakdancer-max ${outdir}/${name}${chr}.cfg | tail -n +5 > ${outdir}/${name}${chr}.brk
+	scripts/breakdancer2vcf.py -i ${outdir}/${name}${chr}.brk -o ${outdir}/${name}${chr}.vcf
 fi
 
-if [ -s ${outdir}/${name}.chr12.vcf ]; then
-	rm ${outdir}/${name}.chr12.cfg
- 	rm ${outdir}/${name}.chr12.brk
+if [ -s ${outdir}/${name}${chr}.vcf ]; then
+	rm ${outdir}/${name}${chr}.cfg
+ 	rm ${outdir}/${name}${chr}.brk
 fi
 
 echo "DMFinder prerequisite files complete, running DMFinder..."
 
 #actually run dmfinder
-if [ -s ${outdir}/${name}.chr12.vcf -a -s ${outdir}/${name}.chr12.bed ]; then
-	dm_find.pl --input_bam ${outdir}/${name}.chr12.sorted --sv ${outdir}/${name}.chr12.vcf --cn ${outdir}/${name}.chr12.bed --report_file ${outdir}/${name}.chr12.dmrpt --graph_file ${outdir}/${name}.chr12.dmgraph --verbose
+if [ -s ${outdir}/${name}${chr}.vcf -a -s ${outdir}/${name}${chr}.bed ]; then
+	dm_find.pl --input_bam ${outdir}/${name}${chr}.sorted --sv ${outdir}/${name}${chr}.vcf --cn ${outdir}/${name}${chr}.bed --report_file ${outdir}/${name}${chr}.dmrpt --graph_file ${outdir}/${name}${chr}.dmgraph --verbose
 else
         echo "Your VCF file, BED file, or both are empty."
 fi
