@@ -36,14 +36,14 @@ Next, configure the conda environments by running the code below.
 cd DMPipeline
 conda env create -n bowtie2 --file envs/bowtie2-env.yml
 conda env create -n cnvkit --file envs/cnvkit-env.yml
-#conda env create -n snakemake --file envs/snakemake-env.yml
 ```
 
-Download the hg19 reference genome by using the below code. This will also create a bowtie index that will help you align files later. Note the bowtie indexing script takes a significant amount of time so you may want to do this on HPC.
+Download the hg19 reference genome by using the below code. This will also create a bowtie index that will help you align files later. Note the bowtie indexing script (align_hg19.sh) takes a significant amount of time so you may want to rn this on HPC.
 ```
 cd DMPipeline
 wget https://datasets.genepattern.org/data/module_support_files/AmpliconArchitect/hg19.tar.gz
 tar -zxf hg19.tar.gz
+rm hg19.tar.gz
 scripts/align_hg19.sh
 ```
 
@@ -51,7 +51,7 @@ scripts/align_hg19.sh
 
 To run an individual sample, run: 
 ```
-scripts/pipeline.sh [-h] [-f1 FASTQ_FILE1] [-f2 FASTQ_FILE2] [-n SAMPLE_NAME] [-o OUTPUT_DIRECTORY] [-p THREADS]
+scripts/pipeline.sh [-h] -f1 [FASTQ_FILE1] -f2 [FASTQ_FILE2] -n [SAMPLE_NAME] -o [OUTPUT_DIRECTORY] [-p THREADS]
 ```
 Options:
 * f1:	First paired-end fastq file filepath.
@@ -63,7 +63,7 @@ Options:
 
 To run several samples on UVA Rivanna, run:
 ```
-scripts/loop.sh [INPUT_FILE] [-o OUTPUT_DIRECTORY] [-p THREADS]
+scripts/loop.sh [INPUT_FILE] -o [OUTPUT_DIRECTORY] -p [THREADS]
 ```
 This input file should be tab-separated, with the first column being the first fastq file, the second column being the second fastq file, and the third column being the sample name. Within the output directory, a separate directory will be created for each sample. This will submit a Rivanna job for each of the provided samples.
 
