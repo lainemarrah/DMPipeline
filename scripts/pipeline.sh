@@ -94,8 +94,6 @@ else
 
 fi
 
-chrfile=
-
 if [ ! -f ${outdir}/${name}${chr}.sorted.bai ]; then
         samtools index ${outdir}/${name}${chr}.sorted
         samtools flagstat ${outdir}/${name}${chr}.sorted
