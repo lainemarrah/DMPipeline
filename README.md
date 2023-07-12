@@ -52,11 +52,11 @@ scripts/align_hg19.sh
 
 To run an individual sample, run: 
 ```
-scripts/pipeline.sh [-h] -f1 [FASTQ_FILE1] -f2 [FASTQ_FILE2] -n [SAMPLE_NAME] -o [OUTPUT_DIRECTORY] [-p THREADS] [-c CHROMOSOME]
+scripts/pipeline.sh [-h] -1 [FASTQ_FILE1] -2 [FASTQ_FILE2] -n [SAMPLE_NAME] -o [OUTPUT_DIRECTORY] [-p THREADS] [-c CHROMOSOME]
 ```
 Options:
-* f1:	First paired-end fastq file filepath.
-* f2:	Second paired-end fastq file filepath.
+* 1:	First paired-end fastq file filepath.
+* 2:	Second paired-end fastq file filepath.
 * h:     Print Help.
 * n:     The name of your sample. Output files will have this name.
 * o:     Choose a directory for output files created by this pipeline. **If you are providing your own sorted and indexed BAM file**, it (as well as its index) should be in this directory.
