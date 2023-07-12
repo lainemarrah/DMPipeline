@@ -10,19 +10,20 @@ Tools to install:
 * SAMTools (1.12+)
 * Perl (5+)
 * Python (3.7.16+)
+* Java (17+)
 * Conda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
-* Picard: https://github.com/broadinstitute/picard/releases/tag/3.0.0
 * Breakdancer: https://github.com/genome/breakdancer
 * DMFinder: https://github.com/rmarduga/DMFinder
 
 All of the above should be located in your $PATH.
 
 Scripts to download:
+* picard.jar: https://github.com/broadinstitute/picard/releases/tag/3.0.0
 * convert_cns_to_bed.py: https://github.com/AmpliconSuite/AmpliconSuite-pipeline/blob/master/scripts/convert_cns_to_bed.py
 * bam2cfg.pl: https://github.com/genome/breakdancer/blob/master/perl/bam2cfg.pl
 * breakdancer2vcf.py: https://github.com/rmarduga/DMFinder/blob/master/tools/breakdancer2vcf.py
 
-All of the above scripts should be located in the directory DMPipeline/scripts and executable (may need to run chmod u+x [SCRIPT NAME]).
+All of the above scripts should be located in the directory DMPipeline/bin and should be executable (may need to run chmod u+x [SCRIPT NAME]). An easy way to do this for the GitHub-based scripts is to copy and paste with vim, or simply download and move. 
 
 **Setup**
 
