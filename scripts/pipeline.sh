@@ -4,10 +4,10 @@ Help()
 {  
    #show help
    echo
-   echo "Syntax: pipeline.sh [-h] -f1 [FASTQ_FILE1] -f2 [FASTQ_FILE2] -n [SAMPLE_NAME] -o [OUTPUT_DIRECTORY] [-p THREADS] [-c CHROMOSOME]"
+   echo "Syntax: pipeline.sh [-h] -1 [FASTQ_FILE1] -2 [FASTQ_FILE2] -n [SAMPLE_NAME] -o [OUTPUT_DIRECTORY] [-p THREADS] [-c CHROMOSOME]"
    echo "options:"  
-   echo "f1	First paired-end fastq file filepath."
-   echo "f2	Second paired-end fastq file filepath."
+   echo "1	First paired-end fastq file filepath."
+   echo "2	Second paired-end fastq file filepath."
    echo "h     Print this Help."
    echo "n     The name of your sample. Output files will have this name."
    echo "o     Choose a directory for output files created by this pipeline. If you are providing your own sorted and indexed BAM file, it should be in this directory."
@@ -22,11 +22,11 @@ outdir=''
 chr=""
 threads=0
 
-while getopts ":hi:n:o:t:p:r:t" option; do
+while getopts ":h1:2:n:o:p:c:" option; do
    case "$option" in
-      f1) #assign fastq1
+      1) #assign fastq1
 	 fastq1="$OPTARG";;
-      f2) #assign fastq2
+      2) #assign fastq2
       	 fastq2="$OPTARG";;
       h) #display Help
          Help
