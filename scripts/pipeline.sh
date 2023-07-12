@@ -81,14 +81,14 @@ if [ "${chr}" != "" ]; then
         	echo "Split BAM already exists"
 	else
         	samtools view ${outdir}/${name}.sort ${chr} -b > ${outdir}/${name}.${chr}
-        	java -jar picard.jar AddOrReplaceReadGroups I=${outdir}/${name}.${chr} O=${outdir}/${name}.${chr}.sorted SORT_ORDER=coordinate RGID=${id} RGLB=lib1 RGPL=ILLUMINA RGPU=unit1 RGSM=${name}
+        	java -jar bin/picard.jar AddOrReplaceReadGroups I=${outdir}/${name}.${chr} O=${outdir}/${name}.${chr}.sorted SORT_ORDER=coordinate RGID=${id} RGLB=lib1 RGPL=ILLUMINA RGPU=unit1 RGSM=${name}
         	rm ${outdir}/${name}.${chr}
         	samtools index ${outdir}/${name}.${chr}.sorted
         	samtools flagstat ${outdir}/${name}.${chr}.sorted
 	 	chr=".${chr}"
 	fi
 else
-	java -jar picard.jar AddOrReplaceReadGroups I=${outdir}/${name}.sort O=${outdir}/${name}.sorted SORT_ORDER=coordinate RGID=${id} RGLB=lib1 RGPL=ILLUMINA RGPU=unit1 RGSM=${name}
+	java -jar bin/picard.jar AddOrReplaceReadGroups I=${outdir}/${name}.sort O=${outdir}/${name}.sorted SORT_ORDER=coordinate RGID=${id} RGLB=lib1 RGPL=ILLUMINA RGPU=unit1 RGSM=${name}
 	samtools index ${outdir}/${name}.sorted
 	samtools flagstat ${outdir}/${name}.sorted
 
@@ -110,7 +110,7 @@ else
       		mkdir ${outdir}/cnvkit
 	fi
 	cnvkit.py batch ${outdir}/${name}${chr}.sorted -r hg19/hg19_cnvkit_filtered_ref.cnn -p ${threads} -d ${outdir}/cnvkit
-	scripts/convert_cns_to_bed.py --cns_file=${outdir}/${name}${chr}.cns
+	bin/convert_cns_to_bed.py --cns_file=${outdir}/${name}${chr}.cns
 	cp ${outdir}/cnvkit/${name}_CNV_CALLS.bed ${outdir}/${name}${chr}.bed
 fi
 
@@ -123,9 +123,9 @@ echo "Making VCF file..."
 if [ -f ${outdir}/${name}${chr}.vcf ]; then
   echo "VCF file already exists"
 else
-	scripts/bam2cfg.pl ${outdir}/${name}${chr}.sorted > ${outdir}/${name}${chr}.cfg
+	bin/bam2cfg.pl ${outdir}/${name}${chr}.sorted > ${outdir}/${name}${chr}.cfg
 	breakdancer-max ${outdir}/${name}${chr}.cfg | tail -n +5 > ${outdir}/${name}${chr}.brk
-	scripts/breakdancer2vcf.py -i ${outdir}/${name}${chr}.brk -o ${outdir}/${name}${chr}.vcf
+	bin/breakdancer2vcf.py -i ${outdir}/${name}${chr}.brk -o ${outdir}/${name}${chr}.vcf
 fi
 
 if [ -s ${outdir}/${name}${chr}.vcf ]; then
