@@ -32,14 +32,15 @@ Once all prerequisites listed above are downloaded, install DMPipeline by runnin
 git clone https://github.com/lainemarrah/DMPipeline
 ```
 
-Next, configure the conda environments by running the code below. 
+Next, you will need to find the file libstdc++.so.6 in your conda setup. It is usually in /home/user/conda/lib/, but change the filepath in the below code if it is elsewhere. Then, run the following code to configure the conda environments and set the LD_LIBRARY_PATH environment variable:
 ```
 cd DMPipeline
 conda env create -n bowtie2 --file envs/bowtie2-env.yml
 conda env create -n cnvkit --file envs/cnvkit-env.yml
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/user/conda/lib/
 ```
 
-Download the hg19 reference genome by using the below code. This will also create a bowtie index that will help you align files later. Note the bowtie indexing script (align_hg19.sh) takes a significant amount of time so you may want to rn this on HPC.
+Download the hg19 reference genome by using the below code. The bowtie indexing script (align_hg19.sh) will also create a bowtie index that will help you align files later, but note this takes a significant amount of time so you may prefer to run this on HPC if possible.
 ```
 cd DMPipeline
 wget https://datasets.genepattern.org/data/module_support_files/AmpliconArchitect/hg19.tar.gz
