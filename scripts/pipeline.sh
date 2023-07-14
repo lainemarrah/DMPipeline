@@ -107,9 +107,11 @@ else
 	if [ ! -d ${outdir}/cnvkit ]; then
       		mkdir ${outdir}/cnvkit
 	fi
-	cnvkit.py batch ${outdir}/${name}${chr}.sorted -r hg19/hg19_cnvkit_filtered_ref.cnn -p ${threads} -d ${outdir}/cnvkit
+	conda activate cnvkit
+ 	cnvkit.py batch ${outdir}/${name}${chr}.sorted -r hg19/hg19_cnvkit_filtered_ref.cnn -p ${threads} -d ${outdir}/cnvkit
 	bin/convert_cns_to_bed.py --cns_file=${outdir}/${name}${chr}.cns
 	cp ${outdir}/cnvkit/${name}_CNV_CALLS.bed ${outdir}/${name}${chr}.bed
+ 	conda deactivate
 fi
 
 if [ -s ${outdir}/${name}${chr}.bed ]; then
