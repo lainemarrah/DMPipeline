@@ -79,6 +79,7 @@ fi
 if [ "${chr}" != "" ]; then
 	if [ -f ${outdir}/${name}.${chr}.sorted ]; then
         	echo "Split BAM already exists"
+	 	chr=".${chr}"
 	else
         	samtools view ${outdir}/${name}.sort ${chr} -b > ${outdir}/${name}.${chr}
         	java -jar bin/picard.jar AddOrReplaceReadGroups I=${outdir}/${name}.${chr} O=${outdir}/${name}.${chr}.sorted SORT_ORDER=coordinate RGID=${id} RGLB=lib1 RGPL=ILLUMINA RGPU=unit1 RGSM=${name}
