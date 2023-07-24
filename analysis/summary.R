@@ -5,8 +5,9 @@ avillines = function(df){
   df = df %>% filter(!(str_detect(V1, '^DM_index')))
   df_lines = df %>% filter(!(str_detect(V1, '^DM')))
   df_lines = df_lines[,1]
-  df_out = data.frame(df, rep(NA, length(df)), rep(NA, length(df)))
-  
+  df_out = data.frame(df, rep(NA, length(df)), rep(NA, length(df)))  
+ 
+  #assigning cell line to each DM
   for (i in 1:nrow(df)){
     if (df[i,1] %in% df_lines){
       line=df[i,1]
@@ -16,6 +17,8 @@ avillines = function(df){
   }
   df_out = df_out %>% filter((str_detect(V1, '^DM')))
   colnames(df_out) = c("DMs", "Cell_Line", "AVIL")
+ 
+  #determining which DMs contain AVIL
   for (i in 1:nrow(df_out)){
     dmvec = df_out$DMs
     dmvec = substr(dmvec, 11, nchar(dmvec))
@@ -63,8 +66,7 @@ dmcount = function(df){
   for(i in 1:nrow(lines_summary)){
     if(is.na(lines_summary[i,2])){lines_summary[i,2] = 0}
     if(is.na(lines_summary[i,3])){lines_summary[i,3] = FALSE}
-  }
-  
+  }  
   rm(df_lines)
   rm(line)
   rm(al)
@@ -82,6 +84,6 @@ dmsummary = function(df, cancer) {
   return(df_out)
 }
 
-
+#usage
 #gbm = read.table("CCLE-GBM-results.csv", sep="\t")
 #gbm_out = dmsummary(gbm, "Glioblastoma")
