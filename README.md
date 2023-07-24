@@ -37,7 +37,7 @@ Next, you will need to find the file libstdc++.so.6 in your conda setup. It is u
 cd DMPipeline
 conda env create -n bowtie2 --file envs/bowtie2-env.yml
 conda env create -n cnvkit --file envs/cnvkit-env.yml
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/user/conda/lib/
+echo export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/user/conda/lib/ >> ~/.bashrc
 ```
 
 Download the hg19 reference genome by using the below code. The bowtie indexing script (align_hg19.sh) will also create a bowtie index that will help you align files later, but note this takes a significant amount of time so you may prefer to run this on HPC if possible.
