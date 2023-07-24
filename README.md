@@ -6,7 +6,6 @@ User-friendly pipeline to predict double minutes with DMFinder
 Your sequencing data should be paired-end, whole genome sequencing.
 
 Tools to install:
-* GCC (9.2.0+)
 * SAMTools (1.12+)
 * Perl (5+)
 * Python (3.7.16+)
