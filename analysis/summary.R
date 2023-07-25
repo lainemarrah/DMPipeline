@@ -1,8 +1,19 @@
 library(dplyr)
 library(ggplot2)
 
+#first arg: dir with DMFinder result (summary.sh generated) files
+#second arg: name of text file with cancer names (in alphabetical order), should be in same dir as result files
+args <- commandArgs(trailingOnly = TRUE)
+
+#downloading and preparing args
+dir = args[1]
+files = list.files(dir)
+files = files[-which(files==args[2])]
+cancerfile = paste0(dir,"/",args[2])
+cancers = data.frame(read.table(cancerfile, sep="\n"))
+rm(cancerfile)
+
 avillines = function(df){
-  df = df %>% filter(!(str_detect(V1, '^DM_index')))
   df_lines = df %>% filter(!(str_detect(V1, '^DM')))
   df_lines = df_lines[,1]
   df_out = data.frame(df, rep(NA, length(df)), rep(NA, length(df)))  
@@ -84,6 +95,16 @@ dmsummary = function(df, cancer) {
   return(df_out)
 }
 
-#usage
-#gbm = read.table("CCLE-GBM-results.csv", sep="\t")
-#gbm_out = dmsummary(gbm, "Glioblastoma")
+#repeating summary function for each result file in directory
+all_out = data.frame(NA, NA, NA, NA)
+colnames(all_out) = c("Cell_Lines", "DM_Count", "AVIL", "Cancer")
+for (i in 1:length(files)){
+  df = read.table(paste0(dir,"/",files[i]), sep="\t")
+  df_out = dmsummary(df, cancers[i,1])
+  all_out = rbind(all_out, df_out)
+}
+all_out = all_out %>% na.omit()
+
+#write output tab-separated file to same dir
+write.table(all_out, paste0(dir,"/summary.txt"), sep="\t")
+
