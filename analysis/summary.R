@@ -15,19 +15,20 @@ cancers = data.frame(read.table(cancerfile, sep="\n"))
 rm(cancerfile)
 
 avillines = function(df){
-  df_lines = df %>% filter(!(str_detect(V1, '^DM')))
+  df_lines = df %>% filter(!(str_detect(V1, '^DM([1-9]|_)')))
   df_lines = df_lines[,1]
-  df_out = data.frame(df, rep(NA, length(df)), rep(NA, length(df)))  
+  df_out = data.frame(df, rep(NA, length(df)), rep(NA, length(df)))
+  df_out = df_out %>% filter(!(str_detect(V1, '^DM_index')))
  
   #assigning cell line to each DM
-  for (i in 1:nrow(df)){
-    if (df[i,1] %in% df_lines){
-      line=df[i,1]
-    } else if (df[i,1] %in% df_lines==FALSE){
+  for (i in 1:nrow(df_out)){
+    if (df_out[i,1] %in% df_lines){
+      line=df_out[i,1]
+    } else if (df_out[i,1] %in% df_lines==FALSE){
       df_out[i,2] = line
     }
   }
-  df_out = df_out %>% filter((str_detect(V1, '^DM')))
+  df_out = df_out %>% filter((str_detect(V1, '^DM([1-9]|_)')))
   colnames(df_out) = c("DMs", "Cell_Line", "AVIL")
  
   #determining which DMs contain AVIL
@@ -50,10 +51,8 @@ avillines = function(df){
   return(df_out)
 }
 
-#calls avillines
 dmcount = function(df){
-  df = df %>% filter(!(str_detect(V1, '^DM_index')))
-  df_lines = df %>% filter(!(str_detect(V1, '^DM')))
+  df_lines = df %>% filter(!(str_detect(V1, '^DM([1-9]|_)')))
   df_lines = df_lines[,1]
   lines_summary = data.frame(df_lines, rep(NA, length(df_lines)), rep(NA, length(df_lines)))
   colnames(lines_summary)=c("Cell_Lines", "DM_Count", "AVIL")
@@ -78,6 +77,7 @@ dmcount = function(df){
     if(is.na(lines_summary[i,2])){lines_summary[i,2] = 0}
     if(is.na(lines_summary[i,3])){lines_summary[i,3] = FALSE}
   }  
+  
   rm(df_lines)
   rm(line)
   rm(al)
