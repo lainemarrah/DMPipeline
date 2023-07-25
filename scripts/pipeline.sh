@@ -21,6 +21,7 @@ name=''
 outdir=''
 chr=""
 threads=0
+pldir=$PWD
 
 while getopts ":h1:2:n:o:p:c:" option; do
    case "$option" in
@@ -114,10 +115,12 @@ else
       		mkdir ${outdir}/cnvkit
 	fi
 	conda activate cnvkit
- 	cnvkit.py batch ${outdir}/${name}${chr}.sorted -r hg19/hg19_cnvkit_filtered_ref.cnn -p ${threads} -d ${outdir}/cnvkit
-	bin/convert_cns_to_bed.py --cns_file=${outdir}/${name}${chr}.cns
-	cp ${outdir}/cnvkit/${name}_CNV_CALLS.bed ${outdir}/${name}${chr}.bed
- 	conda deactivate
+	cnvkit.py batch ${outdir}/${name}${chr}.sorted -r hg19/hg19_cnvkit_filtered_ref.cnn -p ${threads} -d ${outdir}/cnvkit
+        cd ${outdir}/cnvkit
+        ${pldir}/bin/convert_cns_to_bed.py --cns_file=${outdir}/cnvkit/${name}${chr}.cns
+        cd ${pldir}
+	cp ${outdir}/cnvkit/${name}${chr}_CNV_CALLS.bed ${outdir}/${name}${chr}.bed
+	conda deactivate
 fi
 
 if [ -s ${outdir}/${name}${chr}.bed ]; then
