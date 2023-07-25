@@ -1,5 +1,6 @@
 library(dplyr)
 library(ggplot2)
+library(stringr)
 
 #first arg: dir with DMFinder result (summary.sh generated) files
 #second arg: name of text file with cancer names (in alphabetical order), should be in same dir as result files
@@ -43,7 +44,6 @@ avillines = function(df){
       }
     }
   }
-  rm(df_lines)
   rm(line)
   rm(dmvec)
   rm(dmlist)
@@ -105,6 +105,6 @@ for (i in 1:length(files)){
 }
 all_out = all_out %>% na.omit()
 
-#write output tab-separated file to same dir
+#write output tab-separated file to same dir, optionally can change separator in sep argument
 write.table(all_out, paste0(dir,"/summary.txt"), sep="\t")
 
