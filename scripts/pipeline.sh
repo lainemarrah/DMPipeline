@@ -55,7 +55,7 @@ fi
 echo "Making and sorting BAM file..."
 
 #create sam -> bam -> sorted bam
-if [ -f ${name}.sorted ]; then
+if [ -f ${name}.sort ]; then
         echo "Sorted BAM already exists"
 else
         source /home/lm2ku/.bashrc
@@ -93,6 +93,10 @@ else
 	samtools index ${outdir}/${name}.sorted
 	samtools flagstat ${outdir}/${name}.sorted
 
+fi
+
+if [ -s ${outdir}/${name}.sorted ]; then
+        rm ${outdir}/${name}.sort
 fi
 
 if [ ! -f ${outdir}/${name}${chr}.sorted.bai ]; then
