@@ -52,13 +52,14 @@ if [ ! -d ${outdir} ]; then
         mkdir ${outdir}
 fi
 
+source ~/.bashrc
+
 echo "Making and sorting BAM file..."
 
 #create sam -> bam -> sorted bam
 if [ -f ${outdir}/${name}.sort ]; then
         echo "Sorted BAM already exists"
 else
-        source ~/.bashrc
         conda activate bowtie2
         bowtie2  -p ${threads} -x hg19/hg19full -1 ${fastq1} -2 ${fastq2} | samtools view -bS > ${outdir}/${name}.bam
         conda deactivate
