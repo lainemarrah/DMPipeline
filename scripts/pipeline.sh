@@ -108,7 +108,7 @@ fi
 
 echo "Making BED file..."
 #create cn file
-if [ -f ${outdir}/${name}${chr}.bed ]; then
+if [ -s ${outdir}/${name}${chr}.bed ]; then
 	echo "BED file already exists"
 else
 	if [ ! -d ${outdir}/cnvkit ]; then
@@ -123,13 +123,13 @@ else
 	conda deactivate
 fi
 
-if [ -s ${outdir}/${name}${chr}.bed ]; then
-	rm -r ${outdir}/cnvkit
+if [ -s ${name}.chr12.bed -a -d /scratch/lm2ku/dmfinder/${name}/cnvkit ]; then
+        rm -r /scratch/lm2ku/dmfinder/${name}/cnvkit
 fi
 
 echo "Making VCF file..."
 #create sv file
-if [ -f ${outdir}/${name}${chr}.vcf ]; then
+if [ -s ${outdir}/${name}${chr}.vcf ]; then
   echo "VCF file already exists"
 else
 	bin/bam2cfg.pl ${outdir}/${name}${chr}.sorted > ${outdir}/${name}${chr}.cfg
@@ -137,7 +137,7 @@ else
 	bin/breakdancer2vcf.py -i ${outdir}/${name}${chr}.brk -o ${outdir}/${name}${chr}.vcf
 fi
 
-if [ -s ${outdir}/${name}${chr}.vcf ]; then
+if [ -f ${outdir}/${name}${chr}.vcf ]; then
 	rm ${outdir}/${name}${chr}.cfg
  	rm ${outdir}/${name}${chr}.brk
 fi
