@@ -66,7 +66,7 @@ Options:
 
 To run several samples on UVA Rivanna, run:
 ```
-scripts/loop.sh [INPUT_FILE] -o [OUTPUT_DIRECTORY] [-p THREADS] [-c CHROMOSOME]
+scripts/loop.sh -i [INPUT_FILE] -o [OUTPUT_DIRECTORY] [-p THREADS] [-c CHROMOSOME]
 ```
 This input file should be tab-separated, with the first column being the first fastq file, the second column being the second fastq file, and the third column being the sample name. Within the output directory, a separate directory will be created for each sample. This will submit a Rivanna job for each of the provided samples. Threads and Chromosome fields are the same as the above.
 
