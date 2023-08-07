@@ -74,8 +74,7 @@ This input file should be tab-separated, with the first column being the first f
 
 In your chosen output directory, the pipeline will output eight files. These include: a sorted and indexed BAM file, a sorted and indexed BAM file split to only chromosome 12, a BED copy number file for chromosome 12, a VCF structural variant file for chromosome 12, and the DMFinder output files for chromosome 12 (which have suffixes .dmrpt and .dmgraph). 
 
-Once all the samples have run successfully, you can then run the following to create a basic summary file, where the input file is the same as the sample input file used for the previous script loop.sh:
+Once all the samples have run successfully, you can then run the following to create a basic summary file, where the input file is the same as the sample input file used for the previous script loop.sh. The input and output files should be full filepaths.
 ```
-cd [OUTPUT_DIRECTORY]
 scripts/summary_file.sh [INPUT_FILE] [OUTPUT_FILE]
 ```
