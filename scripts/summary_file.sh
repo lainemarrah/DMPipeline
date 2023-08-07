@@ -1,6 +1,25 @@
 #!/bin/bash
 
-infile=$1
-outfile=$2
+infile=''
+outfile=''
+outdir=''
+chr=''
 
-awk '{print $3}' ${infile} |  while read p;  do echo $p >> ${outfile}; cat $p.chr12.dmrpt >> ${outfile}; done
+while getopts ":i:f:o:c:" option; do
+   case "$option" in
+      i)
+        infile="$OPTARG";;
+      f)
+        outfile="$OPTARG";;
+      o)
+  	    outdir="$OPTARG";;
+      c) 
+        chr="$OPTARG";;
+   esac
+done
+
+if [ "${chr}" != '' ]; then
+	 	chr=".${chr}"
+fi
+
+awk '{print $3}' ${infile} | while read p;  do echo $p >> ${outfile}; cat ${outdir}/${p}/${p}${chr}.dmrpt >> ${outfile}; done
