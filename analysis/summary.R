@@ -7,8 +7,7 @@ library(biomaRt)
 #second arg: name of text file with cancer names (in alphabetical order), should be in same dir as result files
 #third arg (optional): name of gene of interest
 gene = NA
-args = c("/Users/lainemarrah/Desktop/LiLab/DMFinder_Results", "cancers.txt", "AVIL")
-#args <- commandArgs(trailingOnly = TRUE)
+args <- commandArgs(trailingOnly = TRUE)
 
 #downloading and preparing args
 dir = args[1]
@@ -127,7 +126,6 @@ if(is.na(gene)){
   all_out = data.frame(NA, NA, NA)
   colnames(all_out) = c("Cell_Lines", "DM_Count", "Cancer")
   for (i in 1:length(files)){
-    print(cancers[i,1])
     df = read.table(paste0(dir,"/",files[i]), sep="\t")
     df_out = dmsummary(df, cancers[i,1])
     all_out = rbind(all_out, df_out)
@@ -136,7 +134,6 @@ if(is.na(gene)){
   all_out = data.frame(NA, NA, NA, NA)
   colnames(all_out) = c("Cell_Lines", "DM_Count", gene, "Cancer")
   for (i in 1:length(files)){
-    print(cancers[i,1])
     df = read.table(paste0(dir,"/",files[i]), sep="\t")
     df_out = dmsummary(df, cancers[i,1])
     all_out = rbind(all_out, df_out)
