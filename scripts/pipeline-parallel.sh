@@ -47,11 +47,13 @@ done
 
 source ~/.bashrc
 
-#making variables for threading
+#making variables for later
 rows=$(wc -l $infile | cut -d " " -f 1)
 cpuperfile=$(($cpu / $rows))
 memperfile=$(($mem / $rows - 2000))
 sortmem=$(($memperfile / 1000))"G"
+#check chr period consistency
+samples=$(awk -v chr=${chr} -v dir=${outdir} -F "/" '{print dir $2 "/" $2 chr ".sorted"}' ${infile})
 
 #fix while loop
 #making directories for each sample
@@ -106,9 +108,9 @@ echo "Making BED file"
 if [ -s ${name}${chr}.bed ]; then
        echo "BED file already exists"
 else
+       mkdir ${outdir}/cnvkit
        conda activate cnvkit
-       cnvkit.py batch ${outdir}/${name}/${name}${chr}.sorted -r hg19/hg19_cnvkit_filtered_ref.cnn -p ${threads} -d ${outdir}/cnvkit
-       parallel -a ${infile} 'id={//}; name={/}; cp ${outdir}/cnvkit/${name}${chr}_CNV_CALLS.bed ${outdir}/${name}/${name}${chr}.bed'
+       cnvkit.py batch ${samples} -r hg19/hg19_cnvkit_filtered_ref.cnn -p ${threads} -d ${outdir}/cnvkit
        conda deactivate
 fi
 
