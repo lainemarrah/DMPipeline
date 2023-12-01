@@ -55,7 +55,6 @@ sortmem=$(($memperfile / 1000))"G"
 #check chr period consistency
 samples=$(awk -v chr=${chr} -v dir=${outdir} -F "/" '{print dir $2 "/" $2 chr ".sorted"}' ${infile})
 
-#fix while loop
 #making directories for each sample
 while read -r accession name; do
        if [ ! -d ${outdir}/${name} ]; then
@@ -71,7 +70,6 @@ echo "Retrieving fastqs and aligning a BAM"
 #add something for searching for fastqs so we can skip download step if there is already a directory/available fastq
 
 ##downloading fastq
-#fix while loop
 #fastp step? adds like an hour so im not sure
 while read -r accession name; do
        if [ ! -f ${outdir}/${name}/fastq/${id} ]; then
@@ -87,7 +85,6 @@ while read -r accession name; do
 done < ${infile}
 
 
-#parallelize this
 conda activate bowtie2
 bowtie2  -p ${threads} -x hg19/hg19full -1 ${fastq1} -2 ${fastq2} | samtools view -bS > ${outdir}/${name}.bam
 conda deactivate
@@ -97,7 +94,7 @@ parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools fixmate -O bam $
 parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools sort -m 10G -o ${name}.sort ${name}.fixmate'
 #UNTESTED VERSION OF ABOVE
 #parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools sort -m ${sortmem} -@ ${cpuperfile} -o ${name}.sort ${name}.fixmate'
-#parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools index ${name}.sort'
+parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools index ${name}.sort'
 
 #adjust chr parts post-split
 parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools view ${name}.sort '${chr}' -b > ${name}.'${chr}
@@ -113,6 +110,10 @@ else
        cnvkit.py batch ${samples} -r hg19/hg19_cnvkit_filtered_ref.cnn -p ${threads} -d ${outdir}/cnvkit
        conda deactivate
 fi
+
+while IFS="/" read accession name; do
+  scripts/convert_cns_to_bed.py --cns_file=${outdir}/cnvkit/${name}.chr12.cns
+done < ${infile}
 
 #add other steps after testing
 
