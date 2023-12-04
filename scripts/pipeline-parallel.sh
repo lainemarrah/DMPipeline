@@ -91,9 +91,9 @@ conda deactivate
 
 parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools fixmate -O bam ${name}.bam ${name}.fixmate; samtools sort -m 20G -o ${name}.sort ${name}.fixmate; samtools index ${name}.sort'
 parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools fixmate -O bam ${name}.bam ${name}.fixmate'
-parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools sort -m 10G -o ${name}.sort ${name}.fixmate'
-#UNTESTED VERSION OF ABOVE
-#parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools sort -m ${sortmem} -@ ${cpuperfile} -o ${name}.sort ${name}.fixmate'
+#parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools sort -m 10G -o ${name}.sort ${name}.fixmate'
+#have not tested below line but it should work
+parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools sort -m '${sortmem}' -@ '${cpuperfile}' -o ${name}.sort ${name}.fixmate'
 parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools index ${name}.sort'
 
 #adjust chr parts post-split
@@ -102,18 +102,28 @@ parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; java -jar ~/picard.jar Ad
 parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools flagstat ${name}.${chr}.sorted'
 
 echo "Making BED file"
-if [ -s ${name}${chr}.bed ]; then
-       echo "BED file already exists"
-else
-       mkdir ${outdir}/cnvkit
-       conda activate cnvkit
-       cnvkit.py batch ${samples} -r hg19/hg19_cnvkit_filtered_ref.cnn -p ${threads} -d ${outdir}/cnvkit
-       conda deactivate
-fi
-
+mkdir ${outdir}/cnvkit
+conda activate cnvkit
+cnvkit.py batch ${samples} -r hg19/hg19_cnvkit_filtered_ref.cnn -p ${threads} -d ${outdir}/cnvkit
+conda deactivate
 while IFS="/" read accession name; do
   scripts/convert_cns_to_bed.py --cns_file=${outdir}/cnvkit/${name}.chr12.cns
+  cp ${outdir}/cnvkit/${name}.${chr}_CNV_CALLS.bed ${outdir}/${name}/${name}.${chr}.bed 
 done < ${infile}
 
-#add other steps after testing
+echo "Making VCF file/s"
+while IFS="/" read accession name; do
+       ~/scripts/bam2cfg.pl ${outdir}/${name}/${name}.${chr}.sorted > ${outdir}/${name}/${name}.${chr}.cfg
+done < ${infile}
+parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; breakdancer-max ${outdir}/${name}/${name}.'${chr}'.cfg | tail -n +5 > ${outdir}/${name}/${name}.'${chr}'.brk'
+while IFS="/" read accession name; do
+       bin/breakdancer2vcf.py -i ${outdir}/${name}/${name}.${chr}.brk -o ${outdir}/${name}/${name}.${chr}.vcf
+done < ${infile}
 
+if [ -s ${outdir}/${name}/${name}.${chr}.vcf -a -s ${outdir}/${name}/${name}.${chr}.bed ]; then
+	dm_find.pl --input_bam ${outdir}/${name}/${name}.${chr}.sorted --sv ${outdir}/${name}/${name}.${chr}.vcf --cn ${outdir}/${name}/${name}.${chr}.bed --report_file ${outdir}/${name}/${name}.${chr}.dmrpt --graph_file ${outdir}/${name}/${name}.${chr}.dmgraph --verbose
+else
+        echo "Your VCF file, BED file, or both are empty."
+fi
+
+echo "Pipeline complete"
