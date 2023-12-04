@@ -120,10 +120,12 @@ while IFS="/" read accession name; do
        bin/breakdancer2vcf.py -i ${outdir}/${name}/${name}.${chr}.brk -o ${outdir}/${name}/${name}.${chr}.vcf
 done < ${infile}
 
-if [ -s ${outdir}/${name}/${name}.${chr}.vcf -a -s ${outdir}/${name}/${name}.${chr}.bed ]; then
-	dm_find.pl --input_bam ${outdir}/${name}/${name}.${chr}.sorted --sv ${outdir}/${name}/${name}.${chr}.vcf --cn ${outdir}/${name}/${name}.${chr}.bed --report_file ${outdir}/${name}/${name}.${chr}.dmrpt --graph_file ${outdir}/${name}/${name}.${chr}.dmgraph --verbose
-else
-        echo "Your VCF file, BED file, or both are empty."
-fi
+while IFS="/" read accession name; do
+        if [ -s ${outdir}/${name}/${name}.${chr}.vcf -a -s ${outdir}/${name}/${name}.${chr}.bed ]; then
+                dm_find.pl --input_bam ${outdir}/${name}/${name}.${chr}.sorted --sv ${outdir}/${name}/${name}.${chr}.vcf --cn ${outdir}/${name}/${name}.${chr}.bed --report_file ${outdir}/${name}/${name}.${chr}.dmrpt --graph_file ${outdir}/${name}/${name}.${chr}.dmgraph --verbose
+        else
+                echo "For the sample "${name}", your VCF file, BED file, or both are empty."
+        fi
+done < ${infile}
 
 echo "Pipeline complete"
