@@ -56,37 +56,23 @@ sortmem=$(($memperfile / 1000))"G"
 samples=$(awk -v chr=${chr} -v dir=${outdir} -F "/" '{print dir $2 "/" $2 chr ".sorted"}' ${infile})
 
 #making directories for each sample
-while read -r accession name; do
-       if [ ! -d ${outdir}/${name} ]; then
-               mkdir ${outdir}/${name}
-       fi
-       if [ ! -d ${outdir}/${name}/fastq ]; then
-               mkdir ${outdir}/${name}/fastq
-        fi     
+while IFS="/" read accession name; do
+        if [ ! -d /scratch/lm2ku/dmfinder/${name} ]; then
+                mkdir /scratch/lm2ku/dmfinder/${name}
+        fi
+        if [ ! -d /scratch/lm2ku/dmfinder/${name}/fastq ]; then
+               mkdir /scratch/lm2ku/dmfinder/${name}/fastq
+        fi
 done < ${infile}
 
 echo "Retrieving fastqs and aligning a BAM"
-
 #add something for searching for fastqs so we can skip download step if there is already a directory/available fastq
+#downloading fastq
+parallel -a ${infile} 'id={//}; name={/}; prefetch --max-size 100G ${id}; fastq-dump --outdir ${outdir}/${name}/fastq --gzip --skip-technical  -F  --split-files --clip ./${id}; rm -rf ${id}'
 
-##downloading fastq
-#fastp step? adds like an hour so im not sure
-while read -r accession name; do
-       if [ ! -f ${outdir}/${name}/fastq/${id} ]; then
-               module load sratoolkit/2.10.5
-               prefetch --max-size 100G $id
-               fastq-dump --outdir fastq --gzip --skip-technical  -F  --split-files --clip ./$id
-               rm -rf $id       
-               fastp -z 1 -i  /project/UVACC_public/CCLE/CCLE_WGS/${id}_1.fq.gz -I  /project/UVACC_public/CCLE/CCLE_WGS/${id}_2.fq.gz -o /scratch/lm2ku/fastp/${id}_1.fastq.gz -O /scratch/lm2ku/fastp/${id}_2.fastq.gz
-               if [ -d fastq -a -f /scratch/lm2ku/fastp/${id}_1.fastq.gz -a -f /scratch/lm2ku/fastp/${id}_2.fastq.gz ]; then
-                      rm -r fastq
-               fi
-       fi  
-done < ${infile}
-
-
+#aligning
 conda activate bowtie2
-bowtie2  -p ${threads} -x hg19/hg19full -1 ${fastq1} -2 ${fastq2} | samtools view -bS > ${outdir}/${name}.bam
+parallel -a ${infile} 'id={//}; name={/}; bowtie2 -p '${cpuperfile}' -x /home/lm2ku/AA_data_repo/hg19/hg19full -1 /scratch/lm2ku/dmfinder/${name}/fastq/${id}_1.fastq.gz -2 /scratch/lm2ku/dmfinder/${name}/fastq/${id}_2.fastq.gz | samtools view -bS > ${name}.bam'
 conda deactivate
 
 parallel -a ${infile} 'name={/}; cd ${outdir}/${name}; samtools fixmate -O bam ${name}.bam ${name}.fixmate; samtools sort -m 20G -o ${name}.sort ${name}.fixmate; samtools index ${name}.sort'
